@@ -20,10 +20,12 @@
     .filter-group{border:0;border-top:1px solid #d4deeb;margin:0 0 14px;padding:12px 0 0}
     .filter-group legend{font-size:13px;font-weight:800;color:#334155;padding-right:8px}
     .filter-group-actions{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 8px}
-    .filter-actions{display:flex;gap:8px;margin:10px 0 16px}
-    .mini-btn,.icon-btn{border:1px solid var(--line);background:#fff;color:#334155;border-radius:6px;min-height:34px;padding:0 10px;font-weight:800;cursor:pointer}
+    .filter-actions{display:flex;gap:6px;margin:10px 0 16px}
+    .mini-btn,.icon-btn{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:#fff;color:#334155;border-radius:8px;min-height:34px;padding:0 12px;font-size:13px;font-weight:700;cursor:pointer;transition:border-color .18s,background .18s,color .18s}
+    .icon-btn svg{flex-shrink:0}
     .filter-group-actions .mini-btn{min-height:28px;padding:4px 9px;border-radius:999px;font-size:12px;font-weight:700;line-height:1.1;box-shadow:none}
-    .mini-btn:hover,.icon-btn:hover{border-color:#9dc5de}
+    .filter-actions .mini-btn{min-height:28px;padding:4px 9px;border-radius:999px;font-size:12px;font-weight:700;line-height:1.1;box-shadow:none;white-space:nowrap}
+    .mini-btn:hover,.icon-btn:hover{border-color:#9dc5de;background:#f0f7ff;color:#2477a8}
     .check-list{display:grid;gap:6px;max-height:168px;overflow:auto;padding-right:2px}
     .check-list label{display:grid;grid-template-columns:18px minmax(0,1fr);gap:8px;align-items:start;background:#fff;border:1px solid #dde6f2;border-radius:6px;padding:8px;color:#334155;font-size:13px;line-height:1.25}
     .check-list input{margin-top:1px;accent-color:var(--blue)}
@@ -71,7 +73,10 @@
     .modal-panel{width:min(1120px,100%);max-height:calc(100vh - 52px);overflow:auto;background:#fff;border-radius:8px;box-shadow:0 24px 80px rgba(15,23,42,.28)}
     .modal-head{position:sticky;top:0;background:#fff;border-bottom:1px solid var(--line);padding:14px;display:flex;align-items:center;justify-content:space-between;gap:10px;z-index:2}
     .modal-head h2{margin:0;font-size:20px;color:var(--navy)}
-    .modal-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+    .modal-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;align-items:center}
+    #modal-close{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;padding:0;border:none;border-radius:50%;background:transparent;color:#64748b;cursor:pointer;transition:background .18s,color .18s,transform .15s}
+    #modal-close:hover{background:#fee2e2;color:#dc2626;transform:scale(1.12)}
+    #modal-close svg{display:block;pointer-events:none}
     .modal-body{padding:14px}
     .tooltip{position:fixed;pointer-events:none;display:none;background:#172033;color:#fff;border-radius:6px;padding:7px 9px;font-size:12px;box-shadow:0 10px 28px rgba(0,0,0,.18);z-index:30;max-width:260px}
     .status-pill{display:inline-block;border-radius:999px;padding:3px 8px;background:#eef2f7;color:#334155;font-weight:700;font-size:12px}
@@ -107,8 +112,14 @@
           <nav class="coord-switcher" aria-label="Coordenações disponíveis"><a class="coord-chip" href="#">Geral</a><a class="coord-chip" href="#">Caixa de Entrada</a><a class="coord-chip" href="#">CGIAD</a><a class="coord-chip active" href="index.html">CGREQ</a><a class="coord-chip" href="#">DEAPS</a></nav>
         </div>
         <div class="toolbar">
-          <button class="icon-btn" id="download-filtered" type="button" title="Baixar CSV dos dados filtrados">Baixar CSV</button>
-          <button class="icon-btn" id="print-dashboard" type="button" title="Gerar PDF pelo navegador">Imprimir PDF</button>
+          <button class="icon-btn" id="download-filtered" type="button" title="Baixar CSV dos dados filtrados">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            CSV
+          </button>
+          <button class="icon-btn" id="print-dashboard" type="button" title="Gerar PDF pelo navegador">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+            PDF
+          </button>
         </div>
       </div>
 
@@ -234,9 +245,17 @@
           <div class="note" id="modal-subtitle"></div>
         </div>
         <div class="modal-actions">
-          <button class="icon-btn" id="modal-csv" type="button">Baixar CSV</button>
-          <button class="icon-btn" id="modal-print" type="button">Imprimir PDF</button>
-          <button class="icon-btn" id="modal-close" type="button">Fechar</button>
+          <button class="icon-btn" id="modal-csv" type="button" title="Baixar CSV dos dados filtrados">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            CSV
+          </button>
+          <button class="icon-btn" id="modal-print" type="button" title="Gerar PDF pelo navegador">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+            PDF
+          </button>
+          <button id="modal-close" type="button" title="Fechar" aria-label="Fechar">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
         </div>
       </div>
       <div class="modal-body" id="modal-body"></div>
