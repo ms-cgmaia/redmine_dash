@@ -104,10 +104,7 @@
           <div class="crumb">Ministério da Saúde | CGREQ | Gerenciamento de Tarefas</div>
           <h1>Monitoramento e Controle</h1>
           <p class="lead">Monitoramento geral das tarefas registradas no Redmine, com filtros, indicadores, gráficos e listagens verificáveis.</p>
-          <nav class="coord-switcher" aria-label="Coordenações disponíveis">
-            <a class="coord-chip" href="#">Geral</a>
-          <a class="coord-chip" href="#">Caixa de Entrada</a>
-          <a class="coord-chip" href="#">CGIAD</a><a class="coord-chip active" href="index.html">CGREQ</a><a class="coord-chip" href="">DEAPS</a></nav>
+          <nav class="coord-switcher" aria-label="Coordenações disponíveis"><a class="coord-chip" href="#">Geral</a><a class="coord-chip" href="#">Caixa de Entrada</a><a class="coord-chip" href="#">CGIAD</a><a class="coord-chip active" href="index.html">CGREQ</a><a class="coord-chip" href="#">DEAPS</a></nav>
         </div>
         <div class="toolbar">
           <button class="icon-btn" id="download-filtered" type="button" title="Baixar CSV dos dados filtrados">Baixar CSV</button>
@@ -138,7 +135,7 @@
             <span class="note" id="peak-note"></span>
           </div>
           <div id="volume-chart" class="chart"></div>
-          <div class="legend"><span><i class="dot" style="background:var(--blue)"></i>Iniciadas</span><span><i class="dot" style="background:var(--green)"></i>Encerradas</span></div>
+          <div class="legend"><span><i class="dot" style="background:var(--blue)"></i>Iniciadas (não encerradas no mês)</span><span><i class="dot" style="background:var(--green)"></i>Encerradas</span></div>
         </section>
 
         <section class="grid-2">
@@ -381,7 +378,7 @@
     }
 
     function renderVolumeChart(rows) {
-      const started = countBy(rows.filter((task) => task.start), (task) => monthKey(task, "start"));
+      const started = countBy(rows.filter((task) => task.start && (!task.done || monthKey(task, "done") !== monthKey(task, "start"))), (task) => monthKey(task, "start"));
       const closed = countBy(rows.filter((task) => task.done), (task) => monthKey(task, "done"));
       const keys = uniq([...started.map((item) => item.label), ...closed.map((item) => item.label)]).sort();
       if (!keys.length) {
@@ -432,8 +429,10 @@
         el.addEventListener("mouseleave", hideTip);
         el.addEventListener("click", () => {
           const key = el.dataset.key;
-          const chartRows = currentFiltered.filter((task) => el.dataset.chart === "encerradas" ? monthKey(task, "done") === key : monthKey(task, "start") === key);
-          openTaskList(chartRows, `Volume de tarefas - ${key}`);
+          const isEncerradas = el.dataset.chart === "encerradas";
+          const chartRows = currentFiltered.filter((task) => isEncerradas ? monthKey(task, "done") === key : monthKey(task, "start") === key && (!task.done || monthKey(task, "done") !== key));
+          const kind = isEncerradas ? "Encerradas" : "Iniciadas (não encerradas no mês)";
+          openTaskList(chartRows, `Volume de tarefas ${kind} - ${key}`);
         });
       });
     }
@@ -1049,7 +1048,7 @@
         <div class="table-wrap">
           <table>
             <thead>
-              <tr><th>Número</th><th>Título</th><th>Coordenação</th><th>Subprojeto</th><th>Atribuição</th><th>Tipo</th><th>Situação</th><th>Criada em</th><th>Data prevista</th><th>Dias Aberta</th><th>Dias em atraso</th><th>Evidência</th></tr>
+              <tr><th>Número</th><th>Título</th><th>Coordenação</th><th>Subprojeto</th><th>Atribuição</th><th>Tipo</th><th>Situação</th><th>Criada em</th><th>Início</th><th>Conclusão</th><th>Data prevista</th><th>Dias Aberta</th><th>Dias em atraso</th><th>Evidência</th></tr>
             </thead>
             <tbody>
               ${rows.map((task) => {
@@ -1064,6 +1063,8 @@
                     <td>${escapeHtml(task.type)}</td>
                     <td>${taskStatusPill(task)}<br><span class="note">${escapeHtml(task.status)}</span></td>
                     <td>${escapeHtml(task.created || "-")}</td>
+                    <td>${escapeHtml(task.start || "-")}</td>
+                    <td>${escapeHtml(task.done || "-")}</td>
                     <td>${escapeHtml(task.due || "Não informado")}</td>
                     <td style="${daysOpen > 0 ? "font-weight:700;color:#e05a5a" : ""}">${daysOpen > 0 ? daysOpen + " dias" : "-"}</td>
                     <td>${task.lateDays > 0 ? task.lateDays : ""}</td>
@@ -1090,11 +1091,11 @@
     }
 
     function rowsToCsv(rows) {
-      const headers = ["Numero","Titulo","Coordenacao","Subprojeto","Atribuicao","Tipo","Situacao","Criada em","Data prevista","Dias aberta","Dias em atraso","URL","Evidencia"];
+      const headers = ["Numero","Titulo","Coordenacao","Subprojeto","Atribuicao","Tipo","Situacao","Criada em","Inicio","Conclusao","Data prevista","Dias aberta","Dias em atraso","URL","Evidencia"];
       const lines = [headers.join(";")];
       rows.forEach((task) => {
         const daysOpen = task.created ? Math.floor((new Date() - new Date(task.created)) / (1000 * 60 * 60 * 24)) : 0;
-        const values = [task.id, task.title, task.coordination, task.subitem, task.assignee, task.type, task.status, task.created, task.due, daysOpen, task.lateDays, task.url, task.evidence]
+        const values = [task.id, task.title, task.coordination, task.subitem, task.assignee, task.type, task.status, task.created, task.start, task.done, task.due, daysOpen, task.lateDays, task.url, task.evidence]
           .map((value) => `"${String(value ?? "").replaceAll('"','""')}"`);
         lines.push(values.join(";"));
       });
